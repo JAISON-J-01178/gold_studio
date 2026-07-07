@@ -4,9 +4,8 @@
 //     then redeploy to Vercel. Credentials will work globally
 //     on every browser and device automatically.
 // ============================================================
-const DEFAULT_SUPABASE_URL     = 'YOUR_SUPABASE_URL_HERE';       // e.g. https://abcxyz.supabase.co
-const DEFAULT_SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE'; // eyJhb...
-
+const DEFAULT_SUPABASE_URL     = 'https://fegtyzdzzcxixvmpnmrf.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlZ3R5emR6emN4aXh2bXBubXJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0MjYxNDcsImV4cCI6MjA5OTAwMjE0N30.RVGrsZfSu_FsJWm3II3LiexgbGZSsntvbbF6JyMMOw8';
 // ============================================================
 // (No further changes needed below this line)
 // ============================================================
