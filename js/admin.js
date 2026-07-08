@@ -105,7 +105,6 @@ export async function renderAdminDashboard(app) {
   const bookings = await db.get('bookings');
   const enquiries = await db.get('enquiries');
   const testimonials = await db.get('testimonials');
-  const blogs = await db.get('blogs');
 
   const photosCount = portfolio.filter(p => p.media_type !== 'video').length;
   const videosCount = portfolio.filter(p => p.media_type === 'video').length;
@@ -386,45 +385,10 @@ export async function renderAdminDashboard(app) {
           <div class="admin-page-header">
             <h2 class="admin-page-title">Content & Publishing</h2>
             <div class="action-buttons">
-              <button class="btn btn-outline" id="btn-admin-add-testimonial" style="margin-right: 0.5rem;">+ Add Review</button>
-              <button class="btn btn-primary" id="btn-admin-add-blog">+ Write Article</button>
+              <button class="btn btn-primary" id="btn-admin-add-testimonial">+ Add Review</button>
             </div>
           </div>
           
-          <h3 class="serif" style="color: var(--text-white); margin-bottom: 1.5rem;">Blog Articles</h3>
-          <div class="admin-table-container">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>Cover</th>
-                  <th>Title</th>
-                  <th>Category</th>
-                  <th>Author</th>
-                  <th>Date</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="admin-blogs-tbody">
-                ${blogs.map(b => `
-                  <tr data-blog-id="${b.id}">
-                    <td><img src="${b.cover_url}" class="table-thumbnail" alt=""></td>
-                    <td><strong>${b.title}</strong></td>
-                    <td>${b.category}</td>
-                    <td>${b.author}</td>
-                    <td>${new Date(b.created_at).toLocaleDateString()}</td>
-                    <td>
-                      <div class="action-buttons">
-                        <button class="action-btn btn-delete btn-delete-blog" title="Delete">
-                          <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
-
           <h3 class="serif" style="color: var(--text-white); margin-bottom: 1.5rem;">Testimonials Approval</h3>
           <div class="admin-table-container">
             <table class="admin-table">
@@ -690,45 +654,6 @@ export async function renderAdminDashboard(app) {
         </form>
       </div>
     </div>
-
-    <!-- BLOG PUBLISH MODAL -->
-    <div class="admin-modal" id="admin-blog-modal">
-      <div class="admin-modal-container" style="max-width: 700px;">
-        <h3 class="serif text-gold" style="font-size: 1.8rem; margin-bottom: 2rem;">Write Blog Article</h3>
-        <form id="admin-blog-form">
-          <div class="form-group">
-            <label class="form-label">Article Title</label>
-            <input type="text" class="form-control" name="title" required placeholder="e.g. Masterclass in Soft Lighting">
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Category</label>
-              <input type="text" class="form-control" name="category" required placeholder="e.g. Lighting, Wedding Guides">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Author Name</label>
-              <input type="text" class="form-control" name="author" value="Gold Studio Team" required>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Cover Image URL</label>
-            <input type="text" class="form-control" name="cover_url" required placeholder="https://images.unsplash.com/photo...">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Short Excerpt / Summary</label>
-            <input type="text" class="form-control" name="excerpt" required placeholder="A brief hook summary displaying in grids...">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Article Content (HTML tags supported)</label>
-            <textarea class="form-control" name="content" required style="min-height: 220px;" placeholder="<p>Body copy here...</p><h3>Section Heading</h3><p>More details...</p>"></textarea>
-          </div>
-          <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-            <button type="submit" class="btn btn-primary" style="flex: 1;">Publish Post</button>
-            <button type="button" class="btn btn-outline" style="flex: 1;" id="btn-cancel-blog-modal">Cancel</button>
-          </div>
-        </form>
-      </div>
-    </div>
   `;
 
   // Pre-fill Supabase Connection credentials
@@ -771,11 +696,8 @@ export async function renderAdminDashboard(app) {
   document.getElementById('btn-cancel-media-modal').addEventListener('click', () => {
     document.getElementById('admin-media-modal').classList.remove('active');
   });
-
-  document.getElementById('btn-cancel-blog-modal').addEventListener('click', () => {
-    document.getElementById('admin-blog-modal').classList.remove('active');
-  });
 }
+
 
 // --- TAB SUB-ACTIONS & LOGIC BINDERS ---
 
@@ -943,50 +865,6 @@ function bindMediaActions(portfolioList) {
     });
   }
 
-  // Blog publishing modal
-  const addBlogBtn = document.getElementById('btn-admin-add-blog');
-  const blogModal = document.getElementById('admin-blog-modal');
-  const blogForm = document.getElementById('admin-blog-form');
-  const blogsTbody = document.getElementById('admin-blogs-tbody');
-
-  if (addBlogBtn) {
-    addBlogBtn.addEventListener('click', () => {
-      blogForm.reset();
-      blogModal.classList.add('active');
-    });
-  }
-
-  if (blogForm) {
-    blogForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(blogForm);
-      const newPost = {
-        title: formData.get('title'),
-        category: formData.get('category'),
-        author: formData.get('author'),
-        cover_url: formData.get('cover_url'),
-        excerpt: formData.get('excerpt'),
-        content: formData.get('content')
-      };
-
-      await db.insert('blogs', newPost);
-      blogModal.classList.remove('active');
-      renderAdminDashboard(appInstance);
-    });
-  }
-
-  if (blogsTbody) {
-    blogsTbody.addEventListener('click', async (e) => {
-      const deleteBtn = e.target.closest('.btn-delete-blog');
-      if (!deleteBtn) return;
-      const row = e.target.closest('tr');
-      const id = row.getAttribute('data-blog-id');
-      if (confirm("Delete this blog article?")) {
-        await db.delete('blogs', id);
-        renderAdminDashboard(appInstance);
-      }
-    });
-  }
 
   // Testimonials list
   const addTestimonialBtn = document.getElementById('btn-admin-add-testimonial');

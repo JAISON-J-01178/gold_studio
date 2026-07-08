@@ -89,17 +89,8 @@ class App {
       case '#portfolio':
         await this.renderPortfolio();
         break;
-      case '#services':
-        await this.renderServices();
-        break;
-      case '#packages':
-        await this.renderPackages();
-        break;
       case '#testimonials':
         await this.renderTestimonials();
-        break;
-      case '#blog':
-        await this.renderBlog();
         break;
       case '#contact':
         await this.renderContact();
@@ -127,7 +118,6 @@ class App {
     const settings = await db.getSettings();
     const portfolio = await db.get(portfolioTable());
     const testimonials = await db.get('testimonials');
-    const blogs = await db.get('blogs');
 
     const featuredMedia = portfolio.filter(item => item.is_featured).slice(0, 4);
     if (featuredMedia.length === 0 && portfolio.length > 0) {
@@ -383,76 +373,6 @@ class App {
     });
   }
 
-  async renderServices() {
-    const services = await db.get('services');
-
-    this.contentArea.innerHTML = `
-      <section class="py-section container" style="padding-top: 140px;">
-        <h2 class="section-title text-gold serif">Bespoke Services</h2>
-        <p class="section-subtitle">Explore our premium photography and filming packages designed around you</p>
-
-        <div class="services-grid">
-          ${services.map(srv => `
-            <div class="service-card">
-              <img src="${srv.image_url}" class="service-cover" alt="${srv.title}">
-              <div class="service-details">
-                <h3 class="service-title">${srv.title}</h3>
-                <p class="service-desc">${srv.description}</p>
-                <div class="service-meta">
-                  <div class="service-meta-item">
-                    <span class="service-meta-label">Duration</span>
-                    <span class="service-meta-value">${srv.duration}</span>
-                  </div>
-                  <div class="service-meta-item">
-                    <span class="service-meta-label">Deliverables</span>
-                    <span class="service-meta-value">${srv.deliverables}</span>
-                  </div>
-                  <div class="service-meta-item">
-                    <span class="service-meta-label">Starting Price</span>
-                    <span class="service-meta-value text-gold" style="-webkit-text-fill-color: initial; font-weight: 700;">${srv.price}</span>
-                  </div>
-                </div>
-                <a href="#booking?service=${encodeURIComponent(srv.title)}" class="btn btn-secondary" style="width: 100%; text-align: center;">Book Consultation</a>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </section>
-    `;
-  }
-
-  async renderPackages() {
-    const packages = await db.get('packages');
-
-    this.contentArea.innerHTML = `
-      <section class="py-section container" style="padding-top: 140px;">
-        <h2 class="section-title text-gold serif">Photography Packages</h2>
-        <p class="section-subtitle">Compare our carefully structured plans to fit your event style and budget</p>
-
-        <div class="packages-grid">
-          ${packages.map(pkg => `
-            <div class="package-card ${pkg.featured ? 'featured' : ''}">
-              ${pkg.badge ? `<div class="package-badge">${pkg.badge}</div>` : ''}
-              <h3 class="package-title">${pkg.title}</h3>
-              <div class="package-price-box">
-                <span class="package-price">${pkg.price}</span>
-                <span class="package-price-period">/ event</span>
-              </div>
-              <ul class="package-features">
-                ${pkg.features.map(f => `
-                  <li>
-                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                    <span>${f}</span>
-                  </li>
-                `).join('')}
-              </ul>
-              <a href="#booking?package=${encodeURIComponent(pkg.title)}" class="btn ${pkg.featured ? 'btn-primary' : 'btn-secondary'}" style="width: 100%; text-align: center;">Choose ${pkg.title}</a>
-            </div>
-          `).join('')}
-        </div>
-      </section>
-    `;
-  }
 
   async renderTestimonials() {
     const testimonials = await db.get('testimonials');
@@ -544,74 +464,6 @@ class App {
     });
   }
 
-  async renderBlog() {
-    const blogs = await db.get('blogs');
-
-    this.contentArea.innerHTML = `
-      <section class="py-section container" style="padding-top: 140px;">
-        <h2 class="section-title text-gold serif">Studio Chronicles</h2>
-        <p class="section-subtitle">Behind-the-scenes stories, lighting walkthroughs, wedding guides, and announcements</p>
-
-        <!-- SEARCH AND FILTER CONTROLS -->
-        <div class="blog-controls">
-          <div class="blog-search-container">
-            <span class="blog-search-icon">
-              <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-            </span>
-            <input type="text" class="blog-search-input" id="blog-search" placeholder="Search articles...">
-          </div>
-        </div>
-
-        <!-- BLOG GRID -->
-        <div class="blog-grid" id="blog-posts-grid">
-          ${blogs.map(post => this.generateBlogCardHTML(post)).join('')}
-        </div>
-      </section>
-
-      <!-- BLOG MODAL -->
-      <div class="blog-modal" id="blog-article-modal">
-        <div class="blog-modal-container">
-          <div class="blog-modal-header">
-            <img src="" id="modal-blog-cover" class="blog-modal-cover" alt="Blog Cover">
-            <span class="blog-modal-close" id="modal-blog-close">&times;</span>
-          </div>
-          <div class="blog-modal-body">
-            <span class="blog-category" id="modal-blog-category">Category</span>
-            <h2 class="blog-modal-title serif" id="modal-blog-title">Blog Title</h2>
-            <div class="blog-modal-meta">
-              <span>By <strong id="modal-blog-author" style="color: var(--text-white);">Author</strong></span>
-              <span id="modal-blog-date">Date</span>
-            </div>
-            <div class="blog-modal-content" id="modal-blog-content">
-              Content body
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Bind Search Event
-    const searchInput = document.getElementById('blog-search');
-    const postsGrid = document.getElementById('blog-posts-grid');
-    
-    searchInput.addEventListener('input', (e) => {
-      const q = e.target.value.toLowerCase();
-      const filtered = blogs.filter(post => 
-        post.title.toLowerCase().includes(q) || 
-        post.excerpt.toLowerCase().includes(q) || 
-        post.content.toLowerCase().includes(q)
-      );
-
-      if (filtered.length === 0) {
-        postsGrid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: var(--text-muted);">No blog posts found.</div>`;
-      } else {
-        postsGrid.innerHTML = filtered.map(post => this.generateBlogCardHTML(post)).join('');
-        this.bindBlogClicks(filtered);
-      }
-    });
-
-    this.bindBlogClicks(blogs);
-  }
 
   async renderContact() {
     const settings = await db.getSettings();
