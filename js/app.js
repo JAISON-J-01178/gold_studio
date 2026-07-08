@@ -223,10 +223,12 @@ class App {
         <div class="about-grid">
           <div class="about-text">
             <h3>Vision & Journey</h3>
-            <p>Founded in 2016, Gold Studio was born from a desire to combine fine-art storytelling with high-end commercial production values. We approach every wedding, fashion shoot, and cinematic film as an independent production, dedicating time to set staging, custom color-grading, and detail-oriented editing.</p>
-            <p>Over the past decade, our lead photographers and directors have traveled worldwide, covering events in over 15 countries. We have successfully delivered over 500 bespoke galleries, and our team holds accolades for international photojournalism and wedding design.</p>
+            <p>Gold Studio was created with a simple purpose—to capture genuine moments and turn them into lasting memories. As an independent photographer, I believe every photograph should tell a meaningful story, whether it's a wedding, birthday celebration, family gathering, portrait session, or any special occasion. Every project is approached with creativity, patience, and attention to detail, ensuring that each client receives a personalized experience from the first conversation to the final delivery.
+
+              Photography is more than taking pictures; it is about preserving emotions, relationships, and moments that cannot be recreated. I take the time to understand each client's expectations, plan every shoot carefully, and create images that reflect natural expressions and authentic memories. My goal is to make every session comfortable and enjoyable so that every photograph feels genuine and timeless.</p>
+            <p>Gold Studio is built on dedication, continuous learning, and a passion for visual storytelling. By combining creative photography techniques with professional editing, I strive to deliver high-quality images that clients can treasure for years to come. Every customer is important, and every project—whether large or small—receives the same level of care, commitment, and attention. My vision is to build lasting relationships through trust, quality, and memorable photography, one story at a time.</p>
             <h3>Our Craft & Equipment</h3>
-            <p>We work exclusively with industry-standard, medium-format and high-resolution digital cameras (including Hasselblad H6D and Sony A7R V) to provide incomparable detailing. Our cinematic team operates dual-operator DJI Inspire 3 cinematic drones and stabilization rigs to capture breathtaking layouts.</p>
+            <p>At Gold Studio, every photoshoot is handled with creativity, attention to detail, and a passion for capturing genuine moments. Using professional camera equipment, quality lenses, and modern editing tools, every image is carefully crafted to deliver natural, vibrant, and timeless memories for every client.</p>
           </div>
           <div class="about-img-container">
             <img src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80" class="about-img" alt="Photographer in Action">
@@ -244,8 +246,8 @@ class App {
             <div class="stat-label">Events Covered</div>
           </div>
           <div class="stat-card">
-            <div class="stat-number">15+</div>
-            <div class="stat-label">International Awards</div>
+            <div class="stat-number">150+</div>
+            <div class="stat-label">Memories Captured</div>
           </div>
           <div class="stat-card">
             <div class="stat-number">100%</div>
@@ -260,22 +262,22 @@ class App {
             <div class="feature-icon">
               <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
             </div>
-            <h4 class="feature-title">Premium Staging & Direction</h4>
-            <p class="feature-desc">We don't just stand back; we actively coordinate posing, drapery, and styling to sculpt museum-quality visuals.</p>
+            <h4 class="feature-title">Personalized Photography Experience</h4>
+            <p class="feature-desc">Every photoshoot is planned with care, ensuring a comfortable experience and capturing genuine moments that reflect your unique story.</p>
           </div>
           <div class="feature-card">
             <div class="feature-icon">
               <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
             </div>
-            <h4 class="feature-title">Cinematic Grading Pipeline</h4>
-            <p class="feature-desc">Every photograph undergoes custom color balancing and dynamic correction, matching strict theatrical standards.</p>
+            <h4 class="feature-title">Professional Quality</h4>
+            <p class="feature-desc">Using professional camera equipment and modern editing techniques, every photograph is carefully enhanced to deliver sharp, natural, and timeless results.</p>
           </div>
           <div class="feature-card">
             <div class="feature-icon">
               <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
             </div>
-            <h4 class="feature-title">Express Album Delivery</h4>
-            <p class="feature-desc">With local production partners, we ensure rapid fine-art album shipping, arriving at your door within weeks.</p>
+            <h4 class="feature-title">Timely Delivery</h4>
+            <p class="feature-desc">Your edited photographs and albums are delivered on time without compromising quality, so you can relive your special moments as soon as possible.</p>
           </div>
         </div>
 
@@ -289,11 +291,11 @@ class App {
             </div>
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.8rem;">
               <strong style="color: var(--text-white);">Service Coverages:</strong>
-              <span style="color: var(--text-muted);">Local Studios & International Destination Events</span>
+              <span style="color: var(--text-muted);">Available for Local Photography Sessions, Weddings, Events, and Outdoor Shoots. Travel to nearby cities upon request.</span>
             </div>
             <div style="display: flex; justify-content: space-between; padding-bottom: 0.8rem;">
               <strong style="color: var(--text-white);">Lead Photographer:</strong>
-              <span style="color: var(--text-muted);">Gold Director Team & Associates</span>
+              <span style="color: var(--text-muted);">Gold Studio Photography</span>
             </div>
           </div>
         </div>
@@ -620,7 +622,7 @@ class App {
                 </span>
                 <div class="contact-info-text">
                   <h4>Phone</h4>
-                  <p>${settings.phone_number}</p>
+                  <p>${formatIndianPhone(settings.phone_number)}</p>
                 </div>
               </li>
               <li class="contact-info-item">
@@ -807,7 +809,7 @@ class App {
                 </div>
                 <div class="form-group">
                   <label class="form-label">Estimated Budget</label>
-                  <input type="text" class="form-control" name="budget" placeholder="e.g. $3,000">
+                  <input type="text" class="form-control" name="budget" placeholder="e.g. ₹3,000">
                 </div>
               </div>
 
