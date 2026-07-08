@@ -25,6 +25,15 @@
     <div class="container nav-container">
       <a href="#home" class="logo-link">
         <img src="assets/gold_studio_logo.jpg" class="logo-img" id="header-logo-img" alt="Gold Studio Logo">
+        <!-- ⚡ Instant logo loader: reads saved logo from localStorage before first paint -->
+        <script>
+          (function(){
+            try {
+              var s = JSON.parse(localStorage.getItem('gold_studio_settings') || '{}');
+              if (s.logo_url) document.getElementById('header-logo-img').src = s.logo_url;
+            } catch(e) {}
+          })();
+        </script>
         <span class="logo-text serif text-gold" id="header-studio-name">Gold Studio</span>
       </a>
       

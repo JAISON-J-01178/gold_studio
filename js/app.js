@@ -145,7 +145,7 @@ class App {
       <section class="py-section container">
         <div class="about-grid">
           <div class="about-img-container">
-            <img src="https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&w=800&q=80" class="about-img" alt="Gold Studio Space">
+            <img src="assets/home_intro.jpg" class="about-img" alt="Gold Studio Space">
           </div>
           <div class="about-text">
             <h2 class="section-title text-gold serif" style="text-align: left; margin-bottom: 1.5rem;">Luxury Cinematic Photography</h2>
@@ -186,7 +186,7 @@ class App {
               </div>
               <p class="testimonial-text">"${item.review}"</p>
               <div class="testimonial-author">
-                <img src="${item.image_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80'}" class="author-avatar" alt="${item.name}">
+                <img src="${item.image_url || 'assets/avatar_default.jpg'}" class="author-avatar" alt="${item.name}">
                 <div>
                   <h4 class="author-name">${item.name}</h4>
                   <p class="author-role">${item.role || 'Client'}</p>
@@ -221,7 +221,7 @@ class App {
             <p>At Gold Studio, every photoshoot is handled with creativity, attention to detail, and a passion for capturing genuine moments. Using professional camera equipment, quality lenses, and modern editing tools, every image is carefully crafted to deliver natural, vibrant, and timeless memories for every client.</p>
           </div>
           <div class="about-img-container">
-            <img src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80" class="about-img" alt="Photographer in Action">
+            <img src="assets/about_photo.jpg" class="about-img" alt="Photographer in Action">
           </div>
         </div>
 
@@ -392,7 +392,7 @@ class App {
               </div>
               <p class="testimonial-text">"${item.review}"</p>
               <div class="testimonial-author">
-                <img src="${item.image_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80'}" class="author-avatar" alt="${item.name}">
+                <img src="${item.image_url || 'assets/avatar_default.jpg'}" class="author-avatar" alt="${item.name}">
                 <div>
                   <h4 class="author-name">${item.name}</h4>
                   <p class="author-role">${item.role || 'Client'}</p>
