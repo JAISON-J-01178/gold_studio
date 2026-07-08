@@ -675,7 +675,7 @@ class App {
                 </div>
                 <div class="form-group">
                   <label class="form-label">Phone Number</label>
-                  <input type="tel" class="form-control" name="phone" required placeholder="e.g. +1 (555) 000-0000">
+                  <input type="tel" class="form-control" name="phone" required placeholder="e.g. +91 98765 43210">
                 </div>
               </div>
               <div class="form-group">
@@ -1081,7 +1081,7 @@ function formatIndianPhone(phone) {
     phone = phone.substring(2);
   }
 
-  if (phone.length === 10) {
+  if (phone.length === 10) {  
     return `+91 ${phone.substring(0, 5)} ${phone.substring(5)}`;
   }
 
