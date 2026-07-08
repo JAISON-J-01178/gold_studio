@@ -622,7 +622,7 @@ class App {
                 </span>
                 <div class="contact-info-text">
                   <h4>Phone</h4>
-                  <p>${formatIndianPhone(settings.phone_number)}</p>
+                  <p>${settings.phone_number}</p>
                 </div>
               </li>
               <li class="contact-info-item">
@@ -1072,7 +1072,21 @@ class App {
 function portfolioTable() {
   return 'portfolio';
 }
+function formatIndianPhone(phone) {
+  if (!phone) return "";
 
+  phone = phone.toString().replace(/\D/g, "");
+
+  if (phone.startsWith("91") && phone.length === 12) {
+    phone = phone.substring(2);
+  }
+
+  if (phone.length === 10) {
+    return `+91 ${phone.substring(0, 5)} ${phone.substring(5)}`;
+  }
+
+  return phone;
+}
 // Initialize Application on document load
 let studioAppInstance = null;
 document.addEventListener('DOMContentLoaded', () => {
