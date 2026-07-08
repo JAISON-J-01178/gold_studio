@@ -281,31 +281,42 @@ class App {
           </div>
         </div>
 
-        <!-- STUDIO OPERATIONAL DETAILS -->
-<h3 class="serif" style="text-align: center; font-size: 2rem; margin-bottom: 2.5rem;">Operational Details</h3>
+       <!-- STUDIO OPERATIONAL DETAILS -->
+<h3 class="serif" style="text-align:center;font-size:2rem;margin-bottom:2.5rem;">
+  Operational Details
+</h3>
 
-<div class="feature-card" style="max-width: 600px; margin: 0 auto;">
-  <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.95rem;">
+<div class="feature-card" style="max-width:700px;margin:0 auto;padding:2rem;">
+    
+    <table style="width:100%;border-collapse:collapse;">
+        <tr>
+            <td style="width:180px;padding:15px 0;font-weight:600;color:var(--text-white);border-bottom:1px solid rgba(255,255,255,0.05);">
+                Studio Hours:
+            </td>
+            <td style="padding:15px 0;color:var(--text-muted);border-bottom:1px solid rgba(255,255,255,0.05);">
+                ${settings.business_hours}
+            </td>
+        </tr>
 
-    <div style="display: grid; grid-template-columns:170px 1fr; gap:20px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:0.8rem;">
-      <strong style="color: var(--text-white);">Studio Hours:</strong>
-      <span style="color: var(--text-muted);">${settings.business_hours}</span>
-    </div>
+        <tr>
+            <td style="width:180px;padding:15px 0;font-weight:600;color:var(--text-white);border-bottom:1px solid rgba(255,255,255,0.05);vertical-align:top;">
+                Service Areas:
+            </td>
+            <td style="padding:15px 0;color:var(--text-muted);border-bottom:1px solid rgba(255,255,255,0.05);line-height:1.7;">
+                Available for Local Photography Sessions, Weddings, Events, Portraits and Outdoor Shoots. Travel to nearby cities upon request.
+            </td>
+        </tr>
 
-    <div style="display: grid; grid-template-columns:170px 1fr; gap:20px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:0.8rem;">
-      <strong style="color: var(--text-white);">Service Areas:</strong>
-      <span style="color: var(--text-muted);">
-        Available for Local Photography Sessions, Weddings, Events, and Outdoor Shoots.
-        Travel to nearby cities upon request.
-      </span>
-    </div>
+        <tr>
+            <td style="width:180px;padding:15px 0;font-weight:600;color:var(--text-white);">
+                Lead Photographer:
+            </td>
+            <td style="padding:15px 0;color:var(--text-muted);">
+                Gold Studio Photography
+            </td>
+        </tr>
+    </table>
 
-    <div style="display: grid; grid-template-columns:170px 1fr; gap:20px;">
-      <strong style="color: var(--text-white);">Lead Photographer:</strong>
-      <span style="color: var(--text-muted);">Gold Studio Photography</span>
-    </div>
-
-  </div>
 </div>
       </section>
     `;
