@@ -30,7 +30,13 @@
           (function(){
             try {
               var s = JSON.parse(localStorage.getItem('gold_studio_settings') || '{}');
-              if (s.logo_url) document.getElementById('header-logo-img').src = s.logo_url;
+              if (s.logo_url) {
+                var url = s.logo_url;
+                if (url.indexOf('cloudinary.com') !== -1 && url.indexOf('/f_auto') === -1) {
+                  url = url.replace('/image/upload/', '/image/upload/f_auto,q_auto/');
+                }
+                document.getElementById('header-logo-img').src = url;
+              }
             } catch(e) {}
           })();
         </script>
@@ -149,7 +155,7 @@
 
   <!-- MODULE LOADING SCRIPTS -->
   <script type="module">
-    import { db } from './js/data.js';
+    import { db, optimizeCloudinaryUrl } from './js/data.js';
     import { isSupabaseConnected } from './js/supabase-config.js';
     
     // Dynamic settings loader for global elements
@@ -169,8 +175,8 @@
 
         // Update logo images
         if (settings.logo_url) {
-          document.getElementById('header-logo-img').src = settings.logo_url;
-          document.getElementById('dynamic-favicon').href = settings.favicon_url || settings.logo_url;
+          document.getElementById('header-logo-img').src = optimizeCloudinaryUrl(settings.logo_url);
+          document.getElementById('dynamic-favicon').href = optimizeCloudinaryUrl(settings.favicon_url || settings.logo_url);
         }
 
         // Update Floating action buttons links

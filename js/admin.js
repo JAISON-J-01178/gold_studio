@@ -1,6 +1,22 @@
 // js/admin.js
-import { db } from './data.js';
+import { db, optimizeCloudinaryUrl, extractCloudinaryPublicId, getCloudinaryResourceType } from './data.js';
 import { resetSupabaseClient, isSupabaseConnected } from './supabase-config.js';
+
+// Background cleanup helper for replaced Cloudinary assets
+function deleteOldCloudinaryAsset(url) {
+  const publicId = extractCloudinaryPublicId(url);
+  const resourceType = getCloudinaryResourceType(url);
+  if (publicId) {
+    fetch('/api/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ public_id: publicId, resource_type: resourceType })
+    })
+    .then(res => res.json())
+    .then(data => console.log('Cleaned up replaced Cloudinary asset:', data))
+    .catch(err => console.error('Cloudinary asset cleanup failed:', err));
+  }
+}
 
 let appInstance = null;
 
@@ -488,6 +504,49 @@ export async function renderAdminDashboard(app) {
               </div>
             </div>
 
+            <div class="form-row" style="margin-bottom: 2rem;">
+              <div class="form-group">
+                <label class="form-label">Upload Hero Banner (Image or Video)</label>
+                <div class="file-dropzone" id="hero-dropzone">
+                  <input type="file" id="hero-file-input" accept="image/*,video/*">
+                  <div class="dropzone-text">Drag & drop or <span>browse</span> to replace hero cover</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem; margin-top: 1rem; flex-grow: 1;">
+                  ${settings.hero_url && (settings.hero_url.endsWith('.mp4') || settings.hero_url.includes('/video/upload/')) ? `
+                    <video src="${settings.hero_url}" id="settings-hero-preview" style="height: 50px; border-radius: var(--border-radius-sm); border: 1px solid var(--glass-border);" muted autoplay loop></video>
+                  ` : `
+                    <img src="${settings.hero_url}" id="settings-hero-preview" style="height: 50px; border-radius: var(--border-radius-sm); border: 1px solid var(--glass-border);" alt="">
+                  `}
+                  <input type="text" class="form-control" name="hero_url" id="settings-hero-url-input" value="${settings.hero_url}">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-bottom: 2rem;">
+              <div class="form-group">
+                <label class="form-label">Upload Home Intro Section Image</label>
+                <div class="file-dropzone" id="about-intro-dropzone">
+                  <input type="file" id="about-intro-file-input" accept="image/*">
+                  <div class="dropzone-text">Drag & drop or <span>browse</span> to replace intro image</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem; margin-top: 1rem;">
+                  <img src="${settings.about_intro_url}" id="settings-about-intro-preview" style="height: 50px; border-radius: var(--border-radius-sm); border: 1px solid var(--glass-border);" alt="">
+                  <input type="text" class="form-control" name="about_intro_url" id="settings-about-intro-url-input" value="${settings.about_intro_url}">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Upload About Page Story Image</label>
+                <div class="file-dropzone" id="about-story-dropzone">
+                  <input type="file" id="about-story-file-input" accept="image/*">
+                  <div class="dropzone-text">Drag & drop or <span>browse</span> to replace story image</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem; margin-top: 1rem;">
+                  <img src="${settings.about_story_url}" id="settings-about-story-preview" style="height: 50px; border-radius: var(--border-radius-sm); border: 1px solid var(--glass-border);" alt="">
+                  <input type="text" class="form-control" name="about_story_url" id="settings-about-story-url-input" value="${settings.about_story_url}">
+                </div>
+              </div>
+            </div>
+
             <!-- CONTACT DETAILS -->
             <h3 class="serif text-gold" style="font-size: 1.3rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">Contact Information</h3>
             <div class="form-row">
@@ -654,6 +713,50 @@ export async function renderAdminDashboard(app) {
         </form>
       </div>
     </div>
+
+    <!-- TESTIMONIAL UPLOAD MODAL -->
+    <div class="admin-modal" id="admin-testimonial-modal">
+      <div class="admin-modal-container">
+        <h3 class="serif text-gold" style="font-size: 1.8rem; margin-bottom: 2rem;">Add Client Review</h3>
+        <form id="admin-testimonial-form">
+          <div class="form-group">
+            <label class="form-label">Client Name</label>
+            <input type="text" class="form-control" name="name" id="form-testimonial-name" placeholder="e.g. Sarah & James" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Client Role</label>
+            <input type="text" class="form-control" name="role" id="form-testimonial-role" placeholder="e.g. Bride & Groom" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Rating</label>
+            <select class="form-control" name="rating" id="form-testimonial-rating" required>
+              <option value="5">5 Stars</option>
+              <option value="4">4 Stars</option>
+              <option value="3">3 Stars</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Client Avatar / Photo</label>
+            <div class="file-dropzone" id="testimonial-dropzone">
+              <input type="file" id="testimonial-file-input" accept="image/*">
+              <div class="dropzone-text">Drag & drop or <span>browse</span> client photo</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem; margin-top: 1rem;">
+              <img src="assets/avatar_default.jpg" id="form-testimonial-preview" style="height: 50px; width: 50px; border-radius: 50%;" alt="">
+              <input type="text" class="form-control" name="image_url" id="form-testimonial-image-url" placeholder="https://res.cloudinary.com/...">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Review Text</label>
+            <textarea class="form-control" name="review" id="form-testimonial-review" placeholder="Write their review here..." style="min-height: 100px;" required></textarea>
+          </div>
+          <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary" style="flex: 1;">Save Review</button>
+            <button type="button" class="btn btn-outline" style="flex: 1;" id="btn-cancel-testimonial-modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
   `;
 
   // Pre-fill Supabase Connection credentials
@@ -696,6 +799,13 @@ export async function renderAdminDashboard(app) {
   document.getElementById('btn-cancel-media-modal').addEventListener('click', () => {
     document.getElementById('admin-media-modal').classList.remove('active');
   });
+
+  document.getElementById('btn-cancel-testimonial-modal').addEventListener('click', () => {
+    document.getElementById('admin-testimonial-modal').classList.remove('active');
+  });
+
+  // Bind testimonials actions (Add / Delete / Upload)
+  bindTestimonialActions(testimonials);
 }
 
 
@@ -815,7 +925,8 @@ function bindMediaActions(portfolioList) {
       textNode.innerHTML = `Uploading <strong>${file.name}</strong>...`;
 
       try {
-        const publicUrl = await db.uploadMedia(file);
+        const folder = file.type.startsWith('video/') ? 'videos' : 'portfolio';
+        const publicUrl = await db.uploadMedia(file, folder);
         urlInput.value = publicUrl;
         textNode.innerHTML = `Uploaded <strong>${file.name}</strong> successfully!`;
       } catch (err) {
@@ -850,6 +961,10 @@ function bindMediaActions(portfolioList) {
       try {
         if (id) {
           // Edit existing
+          const oldItem = portfolioList.find(p => p.id === id);
+          if (oldItem && oldItem.url !== mediaItem.url && oldItem.url.includes('cloudinary.com')) {
+            deleteOldCloudinaryAsset(oldItem.url);
+          }
           await db.update('portfolio', id, mediaItem);
         } else {
           // Create new
@@ -866,43 +981,8 @@ function bindMediaActions(portfolioList) {
   }
 
 
-  // Testimonials list
-  const addTestimonialBtn = document.getElementById('btn-admin-add-testimonial');
-  const testimonialsTbody = document.getElementById('admin-testimonials-tbody');
+  // Testimonial modal cancels handled in renderAdminDashboard init
 
-  if (addTestimonialBtn) {
-    addTestimonialBtn.addEventListener('click', async () => {
-      const name = prompt("Client Name:");
-      if (!name) return;
-      const role = prompt("Role (e.g. Bride, Groom):");
-      const review = prompt("Write Review:");
-      if (!review) return;
-      
-      const newTestimonial = {
-        name,
-        role,
-        rating: 5,
-        review,
-        image_url: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"
-      };
-
-      await db.insert('testimonials', newTestimonial);
-      renderAdminDashboard(appInstance);
-    });
-  }
-
-  if (testimonialsTbody) {
-    testimonialsTbody.addEventListener('click', async (e) => {
-      const deleteBtn = e.target.closest('.btn-delete-testimonial');
-      if (!deleteBtn) return;
-      const row = e.target.closest('tr');
-      const id = row.getAttribute('data-testimonial-id');
-      if (confirm("Delete this review?")) {
-        await db.delete('testimonials', id);
-        renderAdminDashboard(appInstance);
-      }
-    });
-  }
 }
 
 function bindSettingsActions(currentSettings) {
@@ -949,9 +1029,16 @@ function bindSettingsActions(currentSettings) {
       textNode.innerHTML = `Uploading <strong>${file.name}</strong>...`;
 
       try {
-        const logoUrl = await db.uploadMedia(file);
+        const logoUrl = await db.uploadMedia(file, 'logo');
         document.getElementById('settings-logo-url-input').value = logoUrl;
         document.getElementById('settings-logo-preview').src = logoUrl;
+
+        // Clean up previous logo asset
+        const oldUrl = currentSettings.logo_url;
+        if (oldUrl && oldUrl !== logoUrl && oldUrl.includes('cloudinary.com')) {
+          deleteOldCloudinaryAsset(oldUrl);
+        }
+
         textNode.innerHTML = `Updated logo! Save configuration.`;
       } catch (err) {
         console.error("Logo upload error:", err);
@@ -973,13 +1060,127 @@ function bindSettingsActions(currentSettings) {
       textNode.innerHTML = `Uploading <strong>${file.name}</strong>...`;
 
       try {
-        const faviconUrl = await db.uploadMedia(file);
+        const faviconUrl = await db.uploadMedia(file, 'logo');
         document.getElementById('settings-favicon-url-input').value = faviconUrl;
         document.getElementById('settings-favicon-preview').src = faviconUrl;
+
+        // Clean up previous favicon asset
+        const oldUrl = currentSettings.favicon_url;
+        if (oldUrl && oldUrl !== faviconUrl && oldUrl.includes('cloudinary.com')) {
+          deleteOldCloudinaryAsset(oldUrl);
+        }
+
         textNode.innerHTML = `Updated favicon! Save configuration.`;
       } catch (err) {
         console.error("Favicon upload error:", err);
         alert("Failed to upload favicon: " + (err.message || err.error_description || JSON.stringify(err)));
+        textNode.innerHTML = `Upload failed: ${err.message || 'Error'}`;
+      }
+    });
+  }
+
+  // Hero file upload handler
+  const heroInput = document.getElementById('hero-file-input');
+  if (heroInput) {
+    heroInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const dropzone = document.getElementById('hero-dropzone');
+      const textNode = dropzone.querySelector('.dropzone-text');
+      textNode.innerHTML = `Uploading <strong>${file.name}</strong>...`;
+
+      try {
+        const folder = file.type.startsWith('video/') ? 'videos' : 'hero';
+        const heroUrl = await db.uploadMedia(file, folder);
+        document.getElementById('settings-hero-url-input').value = heroUrl;
+        
+        // Update preview element dynamically based on type
+        const previewContainer = document.getElementById('settings-hero-preview').parentElement;
+        if (file.type.startsWith('video/')) {
+          previewContainer.innerHTML = `
+            <video src="${heroUrl}" id="settings-hero-preview" style="height: 50px; border-radius: var(--border-radius-sm); border: 1px solid var(--glass-border);" muted autoplay loop></video>
+            <input type="text" class="form-control" name="hero_url" id="settings-hero-url-input" value="${heroUrl}">
+          `;
+        } else {
+          previewContainer.innerHTML = `
+            <img src="${heroUrl}" id="settings-hero-preview" style="height: 50px; border-radius: var(--border-radius-sm); border: 1px solid var(--glass-border);" alt="">
+            <input type="text" class="form-control" name="hero_url" id="settings-hero-url-input" value="${heroUrl}">
+          `;
+        }
+
+        // Clean up previous hero asset
+        const oldUrl = currentSettings.hero_url;
+        if (oldUrl && oldUrl !== heroUrl && oldUrl.includes('cloudinary.com')) {
+          deleteOldCloudinaryAsset(oldUrl);
+        }
+
+        textNode.innerHTML = `Updated hero cover! Save configuration.`;
+      } catch (err) {
+        console.error("Hero upload error:", err);
+        alert("Failed to upload hero banner: " + (err.message || err.error_description || JSON.stringify(err)));
+        textNode.innerHTML = `Upload failed: ${err.message || 'Error'}`;
+      }
+    });
+  }
+
+  // Home Intro image file upload handler
+  const aboutIntroInput = document.getElementById('about-intro-file-input');
+  if (aboutIntroInput) {
+    aboutIntroInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const dropzone = document.getElementById('about-intro-dropzone');
+      const textNode = dropzone.querySelector('.dropzone-text');
+      textNode.innerHTML = `Uploading <strong>${file.name}</strong>...`;
+
+      try {
+        const introUrl = await db.uploadMedia(file, 'about');
+        document.getElementById('settings-about-intro-url-input').value = introUrl;
+        document.getElementById('settings-about-intro-preview').src = introUrl;
+
+        // Clean up previous intro asset
+        const oldUrl = currentSettings.about_intro_url;
+        if (oldUrl && oldUrl !== introUrl && oldUrl.includes('cloudinary.com')) {
+          deleteOldCloudinaryAsset(oldUrl);
+        }
+
+        textNode.innerHTML = `Updated intro image! Save configuration.`;
+      } catch (err) {
+        console.error("Home intro image upload error:", err);
+        alert("Failed to upload intro image: " + (err.message || err.error_description || JSON.stringify(err)));
+        textNode.innerHTML = `Upload failed: ${err.message || 'Error'}`;
+      }
+    });
+  }
+
+  // About Story image file upload handler
+  const aboutStoryInput = document.getElementById('about-story-file-input');
+  if (aboutStoryInput) {
+    aboutStoryInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const dropzone = document.getElementById('about-story-dropzone');
+      const textNode = dropzone.querySelector('.dropzone-text');
+      textNode.innerHTML = `Uploading <strong>${file.name}</strong>...`;
+
+      try {
+        const storyUrl = await db.uploadMedia(file, 'about');
+        document.getElementById('settings-about-story-url-input').value = storyUrl;
+        document.getElementById('settings-about-story-preview').src = storyUrl;
+
+        // Clean up previous story asset
+        const oldUrl = currentSettings.about_story_url;
+        if (oldUrl && oldUrl !== storyUrl && oldUrl.includes('cloudinary.com')) {
+          deleteOldCloudinaryAsset(oldUrl);
+        }
+
+        textNode.innerHTML = `Updated story image! Save configuration.`;
+      } catch (err) {
+        console.error("About story image upload error:", err);
+        alert("Failed to upload story image: " + (err.message || err.error_description || JSON.stringify(err)));
         textNode.innerHTML = `Upload failed: ${err.message || 'Error'}`;
       }
     });
@@ -1059,6 +1260,89 @@ function bindSettingsActions(currentSettings) {
         localStorage.removeItem('gold_studio_supabase_anon_key');
         resetSupabaseClient();
         alert("Supabase disconnected.");
+        renderAdminDashboard(appInstance);
+      }
+    });
+  }
+}
+
+function bindTestimonialActions(testimonialsList) {
+  const addBtn = document.getElementById('btn-admin-add-testimonial');
+  const modal = document.getElementById('admin-testimonial-modal');
+  const form = document.getElementById('admin-testimonial-form');
+  const tbody = document.getElementById('admin-testimonials-tbody');
+
+  if (addBtn) {
+    addBtn.addEventListener('click', () => {
+      form.reset();
+      document.getElementById('form-testimonial-preview').src = 'assets/avatar_default.jpg';
+      modal.classList.add('active');
+    });
+  }
+
+  // Handle client photo file upload to Cloudinary
+  const fileInput = document.getElementById('testimonial-file-input');
+  const urlInput = document.getElementById('form-testimonial-image-url');
+
+  if (fileInput) {
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const dropzone = fileInput.closest('.file-dropzone');
+      const textNode = dropzone.querySelector('.dropzone-text');
+      textNode.innerHTML = `Uploading <strong>${file.name}</strong>...`;
+
+      try {
+        const publicUrl = await db.uploadMedia(file, 'testimonials');
+        urlInput.value = publicUrl;
+        document.getElementById('form-testimonial-preview').src = publicUrl;
+        textNode.innerHTML = `Uploaded <strong>${file.name}</strong> successfully!`;
+      } catch (err) {
+        console.error("Testimonial image upload error:", err);
+        alert("Failed to upload testimonial photo: " + err.message);
+        textNode.innerHTML = `Upload failed: ${err.message || 'Error'}`;
+      }
+    });
+  }
+
+  // Submit new review
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+
+      const ratingVal = parseInt(formData.get('rating')) || 5;
+      const imageUrlVal = formData.get('image_url') || 'assets/avatar_default.jpg';
+
+      const newTestimonial = {
+        name: formData.get('name'),
+        role: formData.get('role'),
+        rating: ratingVal,
+        review: formData.get('review'),
+        image_url: imageUrlVal
+      };
+
+      try {
+        await db.insert('testimonials', newTestimonial);
+        modal.classList.remove('active');
+        renderAdminDashboard(appInstance);
+      } catch (err) {
+        console.error("Testimonial save error:", err);
+        alert("Failed to save testimonial: " + err.message);
+      }
+    });
+  }
+
+  // Bind table delete clicks
+  if (tbody) {
+    tbody.addEventListener('click', async (e) => {
+      const deleteBtn = e.target.closest('.btn-delete-testimonial');
+      if (!deleteBtn) return;
+      const row = e.target.closest('tr');
+      const id = row.getAttribute('data-testimonial-id');
+      if (confirm("Delete this review?")) {
+        await db.delete('testimonials', id);
         renderAdminDashboard(appInstance);
       }
     });

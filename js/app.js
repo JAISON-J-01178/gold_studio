@@ -1,5 +1,5 @@
 // js/app.js
-import { db } from './data.js';
+import { db, optimizeCloudinaryUrl, getCloudinaryVideoPoster } from './data.js';
 import { isSupabaseConnected } from './supabase-config.js';
 import { initAdmin, renderAdminLogin, renderAdminDashboard } from './admin.js';
 
@@ -124,11 +124,19 @@ class App {
       featuredMedia.push(...portfolio.slice(0, 4));
     }
 
+    const heroUrl = settings.hero_url || 'assets/hero_cover.jpg';
+    const isHeroVideo = heroUrl.endsWith('.mp4') || heroUrl.includes('/video/upload/');
+    const introImgUrl = settings.about_intro_url || 'assets/home_intro.jpg';
+
     this.contentArea.innerHTML = `
       <!-- HERO BANNER -->
       <section class="hero">
         <div class="hero-background">
-          <img src="assets/hero_cover.jpg" class="hero-media" alt="Cinematic Studio Cover">
+          ${isHeroVideo ? `
+            <video src="${optimizeCloudinaryUrl(heroUrl)}" class="hero-media" autoplay loop muted playsinline></video>
+          ` : `
+            <img src="${optimizeCloudinaryUrl(heroUrl)}" class="hero-media" alt="Cinematic Studio Cover">
+          `}
         </div>
         <div class="hero-overlay"></div>
         <div class="hero-content">
@@ -145,7 +153,7 @@ class App {
       <section class="py-section container">
         <div class="about-grid">
           <div class="about-img-container">
-            <img src="assets/home_intro.jpg" class="about-img" alt="Gold Studio Space">
+            <img src="${optimizeCloudinaryUrl(introImgUrl)}" class="about-img" alt="Gold Studio Space">
           </div>
           <div class="about-text">
             <h2 class="section-title text-gold serif" style="text-align: left; margin-bottom: 1.5rem;">Luxury Cinematic Photography</h2>
@@ -186,7 +194,7 @@ class App {
               </div>
               <p class="testimonial-text">"${item.review}"</p>
               <div class="testimonial-author">
-                <img src="${item.image_url || 'assets/avatar_default.jpg'}" class="author-avatar" alt="${item.name}">
+                <img src="${optimizeCloudinaryUrl(item.image_url || 'assets/avatar_default.jpg')}" class="author-avatar" alt="${item.name}">
                 <div>
                   <h4 class="author-name">${item.name}</h4>
                   <p class="author-role">${item.role || 'Client'}</p>
@@ -221,7 +229,7 @@ class App {
             <p>At Gold Studio, every photoshoot is handled with creativity, attention to detail, and a passion for capturing genuine moments. Using professional camera equipment, quality lenses, and modern editing tools, every image is carefully crafted to deliver natural, vibrant, and timeless memories for every client.</p>
           </div>
           <div class="about-img-container">
-            <img src="assets/about_photo.jpg" class="about-img" alt="Photographer in Action">
+            <img src="${optimizeCloudinaryUrl(settings.about_story_url || 'assets/about_photo.jpg')}" class="about-img" alt="Photographer in Action">
           </div>
         </div>
 
@@ -736,11 +744,13 @@ class App {
 
   generateGalleryHTML(item, index, filterScope) {
     const isVideo = item.media_type === 'video';
+    const optimizedUrl = optimizeCloudinaryUrl(item.url);
+    const posterUrl = getCloudinaryVideoPoster(item.url);
     return `
       <div class="gallery-item" data-index="${index}" data-scope="${filterScope}">
-        <img src="${isVideo ? 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=400&q=80' : item.url}" style="display: ${isVideo ? 'none' : 'block'}" alt="${item.title || ''}">
+        <img src="${isVideo ? posterUrl : optimizedUrl}" style="display: ${isVideo ? 'none' : 'block'}" alt="${item.title || ''}">
         ${isVideo ? `
-          <video src="${item.url}" muted loop playsinline></video>
+          <video src="${optimizedUrl}" muted loop playsinline></video>
           <div class="gallery-play-icon">
             <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
           </div>
@@ -853,11 +863,11 @@ class App {
     // Render media element
     if (isVideo) {
       this.lightboxMedia.innerHTML = `
-        <video src="${item.url}" class="lightbox-media" controls autoplay playsinline loop></video>
+        <video src="${optimizeCloudinaryUrl(item.url)}" class="lightbox-media" controls autoplay playsinline loop></video>
       `;
     } else {
       this.lightboxMedia.innerHTML = `
-        <img src="${item.url}" class="lightbox-media" style="cursor: zoom-in;" alt="${item.title || ''}">
+        <img src="${optimizeCloudinaryUrl(item.url)}" class="lightbox-media" style="cursor: zoom-in;" alt="${item.title || ''}">
       `;
     }
 

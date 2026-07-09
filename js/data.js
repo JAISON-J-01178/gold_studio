@@ -8,6 +8,9 @@ export const defaultData = {
     tagline: "Capturing Golden Moments, Framing Eternal Stories",
     logo_url: "assets/gold_studio_logo.jpg",
     favicon_url: "assets/gold_studio_logo.jpg",
+    hero_url: "assets/hero_cover.jpg",
+    about_intro_url: "assets/home_intro.jpg",
+    about_story_url: "assets/about_photo.jpg",
     phone_number: "+1 (555) 777-8888",
     email_address: "contact@goldstudio.com",
     business_hours: "Monday - Saturday: 9:00 AM - 7:00 PM, Sunday: Closed",
@@ -398,6 +401,32 @@ class Database {
 
   // Unified DELETE operation
   async delete(table, id) {
+    // 1. Fetch item to get its media URL for deletion from Cloudinary if needed
+    try {
+      const list = await this.get(table);
+      const recordToDelete = list.find(item => item.id === id);
+      if (recordToDelete) {
+        const mediaUrl = recordToDelete.url || recordToDelete.image_url || recordToDelete.cover_url;
+        if (mediaUrl && mediaUrl.includes('cloudinary.com')) {
+          const publicId = extractCloudinaryPublicId(mediaUrl);
+          const resourceType = getCloudinaryResourceType(mediaUrl);
+          if (publicId) {
+            // Trigger fire-and-forget delete on Cloudinary via serverless endpoint
+            fetch('/api/delete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ public_id: publicId, resource_type: resourceType })
+            })
+            .then(res => res.json())
+            .then(data => console.log('Cloudinary asset deleted:', data))
+            .catch(err => console.error('Cloudinary background delete error:', err));
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to inspect item before delete:", e);
+    }
+
     if (isSupabaseConnected()) {
       const supabase = getSupabaseClient();
       const { error } = await supabase
@@ -516,34 +545,124 @@ class Database {
   }
 
   /**
-   * Handles media file uploads to Supabase Storage.
+   * Handles media file uploads directly to Cloudinary using a time-sensitive signature.
    */
-  async uploadMedia(file, bucket = 'gold-studio-media') {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-    const filePath = fileName; // Upload directly to bucket root
+  async uploadMedia(file, folder = 'portfolio') {
+    // Determine type (image or video)
+    const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
 
-    if (isSupabaseConnected()) {
-      const supabase = getSupabaseClient();
-      const { error } = await supabase.storage.from(bucket).upload(filePath, file);
+    try {
+      // 1. Get secure signature from serverless endpoint
+      const response = await fetch(`/api/sign-upload?folder=${encodeURIComponent(folder)}`);
+      if (!response.ok) {
+        throw new Error(`Signature endpoint returned status ${response.status}`);
+      }
+      const signData = await response.json();
+      const { signature, timestamp, api_key, cloud_name } = signData;
 
-      if (error) {
-        console.error("Supabase Storage upload error:", error);
-        throw error;
+      // 2. Direct upload to Cloudinary
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', folder);
+      formData.append('timestamp', timestamp);
+      formData.append('signature', signature);
+      formData.append('api_key', api_key);
+
+      const uploadUrl = `https://api.cloudinary.com/v1_1/${cloud_name}/${resourceType}/upload`;
+      const res = await fetch(uploadUrl, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!res.ok) {
+        const errInfo = await res.json();
+        throw new Error(errInfo.error?.message || `Upload failed with status ${res.status}`);
       }
 
-      const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
-      return data.publicUrl;
+      const result = await res.json();
+      return optimizeCloudinaryUrl(result.secure_url);
+    } catch (e) {
+      console.warn("Cloudinary upload failed, falling back to base64 local cache mockup:", e);
+      // Fallback: Read as base64 data URL for local storage mockup
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+      });
     }
-
-    // Fallback: Read as base64 data URL for local storage mockup
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = error => reject(error);
-      reader.readAsDataURL(file);
-    });
   }
 }
 
 export const db = new Database();
+
+/**
+ * Helper to optimize Cloudinary URLs by inserting auto-format and auto-quality.
+ */
+export function optimizeCloudinaryUrl(url, options = 'f_auto,q_auto') {
+  if (!url || !url.includes('cloudinary.com') || url.includes('/f_auto')) return url;
+  try {
+    if (url.includes('/video/upload/')) {
+      return url.replace('/video/upload/', `/video/upload/${options}/`);
+    }
+    return url.replace('/image/upload/', `/image/upload/${options}/`);
+  } catch (e) {
+    return url;
+  }
+}
+
+/**
+ * Extracts the public ID from a Cloudinary URL (e.g. "portfolio/my_photo").
+ */
+export function extractCloudinaryPublicId(url) {
+  if (!url || !url.includes('cloudinary.com')) return null;
+  try {
+    const parts = url.split('/upload/');
+    if (parts.length < 2) return null;
+    
+    let path = parts[1];
+    // Remove version string (e.g. v1720512345/)
+    const versionRegex = /^v\d+\//;
+    path = path.replace(versionRegex, '');
+    
+    // Remove extension
+    const dotIndex = path.lastIndexOf('.');
+    if (dotIndex !== -1) {
+      path = path.substring(0, dotIndex);
+    }
+    return decodeURIComponent(path);
+  } catch (e) {
+    console.error("Failed to parse public ID:", e);
+    return null;
+  }
+}
+
+/**
+ * Determines whether a Cloudinary resource is an 'image' or 'video'.
+ */
+export function getCloudinaryResourceType(url) {
+  if (!url) return 'image';
+  if (url.includes('/video/upload/') || url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov') || url.endsWith('.ogv')) {
+    return 'video';
+  }
+  return 'image';
+}
+
+/**
+ * Generates an automatic video poster image URL from a Cloudinary video URL.
+ */
+export function getCloudinaryVideoPoster(url) {
+  if (!url) return 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=400&q=80';
+  if (!url.includes('cloudinary.com')) {
+    return 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=400&q=80';
+  }
+  try {
+    let posterUrl = url.replace(/\.[^/.]+$/, ".jpg");
+    if (!posterUrl.includes('/f_auto')) {
+      posterUrl = posterUrl.replace('/video/upload/', '/video/upload/f_auto,q_auto,so_auto/');
+    }
+    return posterUrl;
+  } catch (e) {
+    return url;
+  }
+}
